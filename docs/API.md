@@ -1,6 +1,25 @@
 # TÀI LIỆU API SERVER QUỸ BÔNG SEN - TRẠM LẮNG NGHE (v1.0)
 
-Hệ thống cung cấp API cho ứng dụng ATM giao tiếp với Server Quỹ Bông Sen.
+Hệ thống cung cấp API cho ứng dụng ATM giao tiếp với Server Quỹ Bông Sen, đồng thời tích hợp sẵn **Web Admin Dashboard** trực tiếp tại địa chỉ gốc của server (`/`).
+
+---
+
+## 0. Web Admin Dashboard (Giao Diện Quản Trị)
+
+- **Địa chỉ truy cập**: `http://<dia-chi-ip-hoac-domain>:3000/`
+- **Các chức năng chính**:
+  1. **Tab Hồ Sơ Xét Duyệt**:
+     - Hiển thị danh sách hồ sơ với đầy đủ liên kết: Mã hồ sơ, ATM ID, Danh sách Staff bảo chứng, Số tiền đề xuất / Phê duyệt, Điểm Severity (0–100), Hệ số giải ngân (%), Trạng thái (`APPROVED` / `REJECTED`), số lượng ảnh scan chứng từ và thời gian xử lý.
+     - Nút xem chi tiết từng ca: mở modal xem toàn bộ đoạn hội thoại chat trực quan, phân tích điểm AI (Emergency, Income, Family, Health), xem/tải ảnh chứng từ scan, và có nút **"Xác Nhận Duyệt Thủ Công"** cho các ca Mức B (chưa có giấy tờ).
+  2. **Tab Hội Thoại Trạm Lắng Nghe**:
+     - Danh sách tất cả các phiên hội thoại kèm trạng thái (`START`, `PENDING`, `UPLOAD`, `CONFIRM`, `FINISHED`).
+     - Xem lại toàn bộ diễn biến từng lượt thoại giữa người dân và AI.
+  3. **Tab Thiết Bị ATM**:
+     - Quản lý danh sách cây ATM (`atmId`, `serialNumber`, `hospital_id`, tên điểm đặt, trạng thái).
+     - Cho phép Thêm mới hoặc Xóa thiết bị ATM (đồng bộ tự động với `config/atm_list.json`).
+  4. **Tab Người Bảo Chứng (Staff)**:
+     - Quản lý danh sách nhân viên bảo chứng (`staffId`, họ tên, mã CCCD, bệnh viện, vai trò).
+     - Cho phép Thêm mới hoặc Xóa nhân viên (đồng bộ tự động với `config/operator_list.json`).
 
 ---
 

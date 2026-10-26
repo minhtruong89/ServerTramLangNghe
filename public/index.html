@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Quỹ Bông Sen (Trạm Lắng Nghe)</title>
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .tab-active { border-bottom: 2px solid #0284c7; color: #0284c7; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg bg-sky-500 text-white flex items-center justify-center font-bold text-xl shadow-md">
+          BS
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Quỹ Từ Thiện Bông Sen</h1>
+          <p class="text-xs text-slate-500">Hệ Thống Quản Trị Trạm Lắng Nghe</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+          <span class="w-1.5 h-1.5 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Server Online
+        </span>
+        <button onclick="refreshCurrentTab()" class="p-2 text-slate-500 hover:text-sky-600 rounded-lg hover:bg-slate-100 transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-8">
+      <button onclick="switchTab('tab-records')" id="btn-records" class="tab-btn py-3 px-1 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center space-x-2 tab-active">
+        <i data-lucide="file-check-2" class="w-4 h-4"></i>
+        <span>Hồ Sơ Xét Duyệt</span>
+      </button>
+      <button onclick="switchTab('tab-conversations')" id="btn-conversations" class="tab-btn py-3 px-1 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+        <i data-lucide="messages-square" class="w-4 h-4"></i>
+        <span>Hội Thoại Trạm Lắng Nghe</span>
+      </button>
+      <button onclick="switchTab('tab-atm')" id="btn-atm" class="tab-btn py-3 px-1 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+        <i data-lucide="monitor" class="w-4 h-4"></i>
+        <span>Thiết Bị ATM</span>
+      </button>
+      <button onclick="switchTab('tab-staff')" id="btn-staff" class="tab-btn py-3 px-1 text-sm font-medium text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+        <i data-lucide="users" class="w-4 h-4"></i>
+        <span>Người Bảo Chứng (Staff)</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+
+    <!-- 1. TAB HỒ SƠ XÉT DUYỆT (MEDICAL RECORDS) -->
+    <section id="tab-records" class="tab-content">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Danh Sách Hồ Sơ Giải Ngân</h2>
+          <p class="text-sm text-slate-500">Tổng hợp hồ sơ liên kết giữa ATM, Staff, Lịch sử hội thoại và Quyết định giải ngân</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-slate-600 font-semibold">
+              <tr>
+                <th class="px-4 py-3 text-left">Mã Hồ Sơ</th>
+                <th class="px-4 py-3 text-left">ATM & Staff Bảo Chứng</th>
+                <th class="px-4 py-3 text-left">Đề Xuất / Phê Duyệt</th>
+                <th class="px-4 py-3 text-center">Severity / Hệ Số</th>
+                <th class="px-4 py-3 text-center">Trạng Thái</th>
+                <th class="px-4 py-3 text-center">Chứng Từ</th>
+                <th class="px-4 py-3 text-right">Thời Gian</th>
+                <th class="px-4 py-3 text-center">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="records-table-body" class="divide-y divide-slate-200">
+              <tr>
+                <td colspan="8" class="text-center py-8 text-slate-400">Đang tải dữ liệu hồ sơ...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. TAB HỘI THOẠI (CONVERSATIONS) -->
+    <section id="tab-conversations" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Tiến Trình Hội Thoại</h2>
+          <p class="text-sm text-slate-500">Toàn bộ phiên tương tác giữa người dân và Trạm Lắng Nghe trên cây ATM</p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-slate-600 font-semibold">
+              <tr>
+                <th class="px-4 py-3 text-left">Mã Hội Thoại</th>
+                <th class="px-4 py-3 text-left">Thiết Bị ATM</th>
+                <th class="px-4 py-3 text-left">Số Tiền Đề Xuất</th>
+                <th class="px-4 py-3 text-center">Số Lượt Thoại</th>
+                <th class="px-4 py-3 text-center">Trạng Thái</th>
+                <th class="px-4 py-3 text-right">Khởi Tạo</th>
+                <th class="px-4 py-3 text-center">Chi Tiết</th>
+              </tr>
+            </thead>
+            <tbody id="conversations-table-body" class="divide-y divide-slate-200">
+              <tr>
+                <td colspan="7" class="text-center py-8 text-slate-400">Đang tải lịch sử hội thoại...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. TAB ATM -->
+    <section id="tab-atm" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Quản Lý Cây ATM</h2>
+          <p class="text-sm text-slate-500">Danh sách thiết bị ATM được cấp phép giao tiếp với server</p>
+        </div>
+        <button onclick="openAtmModal()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg text-sm flex items-center space-x-2 shadow-sm transition">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Thêm Thiết Bị ATM</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="atm-cards-container">
+        <!-- Render cards dynamically -->
+      </div>
+    </section>
+
+    <!-- 4. TAB STAFF -->
+    <section id="tab-staff" class="tab-content hidden">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Danh Sách Người Bảo Chứng (Staff)</h2>
+          <p class="text-sm text-slate-500">Nhân viên bệnh viện / tình nguyện viên bảo chứng ca giải ngân</p>
+        </div>
+        <button onclick="openStaffModal()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-lg text-sm flex items-center space-x-2 shadow-sm transition">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Thêm Nhân Viên</span>
+        </button>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-slate-600 font-semibold">
+            <tr>
+              <th class="px-4 py-3 text-left">Staff ID</th>
+              <th class="px-4 py-3 text-left">Họ và Tên</th>
+              <th class="px-4 py-3 text-left">Mã CCCD / Thẻ</th>
+              <th class="px-4 py-3 text-left">Bệnh Viện</th>
+              <th class="px-4 py-3 text-left">Vai Trò</th>
+              <th class="px-4 py-3 text-center">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody id="staff-table-body" class="divide-y divide-slate-200">
+            <!-- Render rows dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL XEM CHI TIẾT HỘI THOẠI & PHÂN TÍCH AI -->
+  <div id="modal-detail" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden m-4">
+      <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900" id="modal-title">Chi Tiết Phiên Hội Thoại</h3>
+          <p class="text-xs text-slate-500" id="modal-subtitle">ID: CONV_xxx</p>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto flex-1 space-y-6" id="modal-body">
+        <!-- Render conversation chat + AI scoring details -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL THÊM / SỬA ATM -->
+  <div id="modal-atm" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 m-4 space-y-4">
+      <h3 class="text-lg font-bold text-slate-900">Thêm / Sửa Thiết Bị ATM</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Mã ATM (atmId)</label>
+          <input type="text" id="input-atm-id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none" placeholder="Ví dụ: ATM_003">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Số Serial (serialNumber)</label>
+          <input type="text" id="input-atm-serial" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none" placeholder="Ví dụ: SN-556677">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tên Điểm Đặt</label>
+          <input type="text" id="input-atm-name" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none" placeholder="Ví dụ: Bệnh Viện Ung Bướu CS2">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Mã Bệnh Viện (hospital_id)</label>
+          <input type="text" id="input-atm-hospital" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none" value="BV001">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-3 pt-2">
+        <button onclick="closeAtmModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">Hủy</button>
+        <button onclick="saveAtmAction()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-medium">Lưu Thiết Bị</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL THÊM / SỬA STAFF -->
+  <div id="modal-staff" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 m-4 space-y-4">
+      <h3 class="text-lg font-bold text-slate-900">Thêm / Sửa Người Bảo Chứng</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Staff ID</label>
+          <input type="text" id="input-staff-id" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none" placeholder="Ví dụ: STAFF_005">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Họ và Tên</label>
+          <input type="text" id="input-staff-name" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none" placeholder="Ví dụ: NGUYỄN VĂN AN">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Số CCCD / Mã Thẻ</label>
+          <input type="text" id="input-staff-citizen" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none" placeholder="Ví dụ: 079123456789">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Bệnh Viện</label>
+          <input type="text" id="input-staff-hospital" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none" value="BV001">
+        </div>
+      </div>
+      <div class="flex justify-end space-x-3 pt-2">
+        <button onclick="closeStaffModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">Hủy</button>
+        <button onclick="saveStaffAction()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-medium">Lưu Nhân Viên</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'tab-records';
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('tab-active'));
+
+      document.getElementById(tabId).classList.remove('hidden');
+      const btnId = tabId.replace('tab-', 'btn-');
+      document.getElementById(btnId).classList.add('tab-active');
+
+      refreshCurrentTab();
+    }
+
+    function refreshCurrentTab() {
+      if (currentTab === 'tab-records') loadRecords();
+      if (currentTab === 'tab-conversations') loadConversations();
+      if (currentTab === 'tab-atm') loadAtms();
+      if (currentTab === 'tab-staff') loadStaff();
+    }
+
+    // --- 1. LOAD RECORDS ---
+    async function loadRecords() {
+      const tbody = document.getElementById('records-table-body');
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-slate-400">Đang tải dữ liệu hồ sơ...</td></tr>';
+      try {
+        const res = await fetch('/api/admin/records');
+        const records = await res.json();
+
+        if (!records.length) {
+          tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-slate-400">Chưa có hồ sơ giải ngân nào.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = records.map(r => {
+          const isAppr = r.status === 'APPROVED';
+          const badgeClass = isAppr ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800';
+          const staffNames = (r.staffList || []).map(s => s.staffId).join(', ');
+          const hasFiles = r.conversation?.files?.length > 0;
+
+          return `
+            <tr class="hover:bg-slate-50/80 transition">
+              <td class="px-4 py-3 font-semibold text-slate-900">${r.id}</td>
+              <td class="px-4 py-3">
+                <div class="font-medium text-slate-800">${r.atmId}</div>
+                <div class="text-xs text-slate-500">Staff: ${staffNames || 'N/A'}</div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="font-bold text-sky-600">${r.approvedAmount.toLocaleString('vi-VN')} đ</div>
+                <div class="text-xs text-slate-400 line-through">Đề xuất: ${r.proposedAmount.toLocaleString('vi-VN')} đ</div>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span class="font-semibold text-slate-700">${r.serverTotalScore}/100</span>
+                <span class="text-xs bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 ml-1">${r.serverDisbursementRate}%</span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${badgeClass}">
+                  ${r.status}
+                </span>
+                ${r.requireStaffConfirm ? '<div class="text-[10px] text-amber-600 font-medium mt-0.5">⚠️ Chờ duyệt tay</div>' : ''}
+              </td>
+              <td class="px-4 py-3 text-center">
+                ${hasFiles ? `<span class="text-xs bg-indigo-50 text-indigo-700 font-medium px-2 py-0.5 rounded-full">${r.conversation.files.length} ảnh scan</span>` : '<span class="text-xs text-slate-400">Không có</span>'}
+              </td>
+              <td class="px-4 py-3 text-right text-xs text-slate-500">
+                ${new Date(r.processedAt).toLocaleString('vi-VN')}
+              </td>
+              <td class="px-4 py-3 text-center">
+                <button onclick="viewRecordDetail('${r.id}')" class="text-xs font-medium text-sky-600 hover:text-sky-800 bg-sky-50 hover:bg-sky-100 px-2.5 py-1 rounded-md transition">
+                  Xem Ca
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-rose-500">Lỗi nạp hồ sơ: ${err.message}</td></tr>`;
+      }
+    }
+
+    // --- 2. LOAD CONVERSATIONS ---
+    async function loadConversations() {
+      const tbody = document.getElementById('conversations-table-body');
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-slate-400">Đang tải lịch sử hội thoại...</td></tr>';
+      try {
+        const res = await fetch('/api/admin/conversations');
+        const convs = await res.json();
+
+        if (!convs.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-slate-400">Chưa có phiên hội thoại nào.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = convs.map(c => `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-semibold text-slate-900">${c.id}</td>
+            <td class="px-4 py-3 font-medium text-slate-700">${c.atmId}</td>
+            <td class="px-4 py-3 font-medium text-slate-900">${c.proposedAmount.toLocaleString('vi-VN')} đ</td>
+            <td class="px-4 py-3 text-center text-slate-600">${c.messages.length} lượt</td>
+            <td class="px-4 py-3 text-center">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.status === 'FINISHED' ? 'bg-slate-100 text-slate-700' : 'bg-amber-100 text-amber-800'}">
+                ${c.status}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-right text-xs text-slate-500">${new Date(c.createdAt).toLocaleString('vi-VN')}</td>
+            <td class="px-4 py-3 text-center">
+              <button onclick="viewConversationDetail('${c.id}')" class="text-xs font-medium text-sky-600 hover:text-sky-800 bg-sky-50 hover:bg-sky-100 px-2.5 py-1 rounded-md transition">
+                Hội thoại
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-rose-500">Lỗi nạp hội thoại: ${err.message}</td></tr>`;
+      }
+    }
+
+    // --- 3. LOAD ATMS ---
+    async function loadAtms() {
+      const container = document.getElementById('atm-cards-container');
+      try {
+        const res = await fetch('/api/admin/atms');
+        const atms = await res.json();
+
+        container.innerHTML = atms.map(a => `
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-3">
+                <span class="px-2.5 py-1 bg-sky-50 text-sky-700 text-xs font-bold rounded-lg">${a.atmId}</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
+                  ${a.status || 'ACTIVE'}
+                </span>
+              </div>
+              <h3 class="font-bold text-slate-900 text-base mb-1">${a.name || 'Cây ATM Quỹ Bông Sen'}</h3>
+              <p class="text-xs text-slate-500 mb-2">Serial: <span class="font-mono text-slate-700 font-semibold">${a.serialNumber}</span></p>
+              <p class="text-xs text-slate-500">Bệnh viện: <span class="font-medium text-slate-700">${a.hospital_id}</span></p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end space-x-2">
+              <button onclick="deleteAtmAction('${a.atmId}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded transition">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+        lucide.createIcons();
+      } catch (err) {
+        container.innerHTML = `<div class="col-span-3 text-rose-500">Lỗi: ${err.message}</div>`;
+      }
+    }
+
+    // --- 4. LOAD STAFF ---
+    async function loadStaff() {
+      const tbody = document.getElementById('staff-table-body');
+      try {
+        const res = await fetch('/api/admin/staff');
+        const staff = await res.json();
+
+        tbody.innerHTML = staff.map(s => `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="px-4 py-3 font-bold text-slate-900">${s.staffId}</td>
+            <td class="px-4 py-3 font-medium text-slate-800">${s.name}</td>
+            <td class="px-4 py-3 font-mono text-slate-600">${s.id || 'N/A'}</td>
+            <td class="px-4 py-3 text-slate-600">${s.hospital_id}</td>
+            <td class="px-4 py-3"><span class="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-700">${s.staffType}</span></td>
+            <td class="px-4 py-3 text-center">
+              <button onclick="deleteStaffAction('${s.staffId}')" class="text-slate-400 hover:text-rose-600 transition p-1">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+        lucide.createIcons();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-rose-500 py-4">Lỗi: ${err.message}</td></tr>`;
+      }
+    }
+
+    // --- MODAL DETAILS ---
+    async function viewRecordDetail(recordId) {
+      const res = await fetch(`/api/admin/records/${recordId}`);
+      const r = await res.json();
+
+      document.getElementById('modal-title').innerText = `Hồ Sơ Giải Ngân: ${r.id}`;
+      document.getElementById('modal-subtitle').innerText = `Phiên: ${r.conversationId} | ATM: ${r.atmId} | Duyệt: ${r.approvedAmount.toLocaleString('vi-VN')} đ`;
+
+      const filesHtml = (r.conversation.files || []).map(f => `
+        <a href="${f.fileUrl}" target="_blank" class="block border rounded-lg p-2 bg-slate-50 hover:bg-slate-100 transition">
+          <div class="text-xs font-semibold text-slate-700 truncate">${f.originalName || f.fileName}</div>
+          <span class="text-[10px] text-sky-600">Xem file chứng từ ↗</span>
+        </a>
+      `).join('');
+
+      const chatHtml = (r.conversation.messages || []).map(m => {
+        const isAI = m.role === 'assistant';
+        return `
+          <div class="flex ${isAI ? 'justify-start' : 'justify-end'} mb-3">
+            <div class="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${isAI ? 'bg-sky-50 text-slate-800 border border-sky-100' : 'bg-slate-800 text-white'}">
+              <div class="text-[10px] font-bold mb-1 opacity-75">${isAI ? 'Trạm Lắng Nghe' : 'Người cần trợ giúp'}</div>
+              <div>${m.content || '<em>(Không có lời thoại)</em>'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('modal-body').innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="md:col-span-2 space-y-4">
+            <h4 class="font-bold text-slate-900 border-b pb-2 flex items-center space-x-2">
+              <i data-lucide="message-circle" class="w-4 h-4 text-sky-600"></i>
+              <span>Diễn Biến Hội Thoại</span>
+            </h4>
+            <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200 max-h-[400px] overflow-y-auto">
+              ${chatHtml}
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <h4 class="font-bold text-slate-900 border-b pb-2 flex items-center space-x-2">
+              <i data-lucide="bot" class="w-4 h-4 text-purple-600"></i>
+              <span>Đánh Giá AI & Điểm Số</span>
+            </h4>
+            <div class="bg-purple-50/50 p-4 rounded-xl border border-purple-100 text-xs space-y-2">
+              <div><strong>Trạng thái AI:</strong> <span class="font-semibold text-purple-700">${r.aiState}</span></div>
+              <div class="grid grid-cols-2 gap-2 pt-2 border-t border-purple-200">
+                <div>Emergency: <strong>${r.aiEmergencyScore}/25</strong></div>
+                <div>Income: <strong>${r.aiIncomeScore}/35</strong></div>
+                <div>Family: <strong>${r.aiFamilyScore}/30</strong></div>
+                <div>Health: <strong>${r.aiHealthScore}/30</strong></div>
+              </div>
+              <div class="pt-2 border-t border-purple-200 font-bold text-sm text-slate-900 flex justify-between">
+                <span>Total Score:</span>
+                <span class="text-sky-600">${r.serverTotalScore}/100 (${r.serverDisbursementRate}%)</span>
+              </div>
+            </div>
+
+            <h4 class="font-bold text-slate-900 border-b pb-2 flex items-center space-x-2">
+              <i data-lucide="paperclip" class="w-4 h-4 text-indigo-600"></i>
+              <span>Chứng Từ Đính Kèm (${r.conversation.files.length})</span>
+            </h4>
+            <div class="space-y-2">
+              ${filesHtml || '<div class="text-xs text-slate-400">Không có chứng từ đính kèm (Mức B)</div>'}
+            </div>
+
+            ${r.requireStaffConfirm ? `
+              <div class="pt-4 border-t">
+                <button onclick="approveManually('${r.id}')" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg text-xs transition">
+                  Xác Nhận Duyệt Thủ Công Ca Này
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modal-detail').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    async function viewConversationDetail(convId) {
+      const res = await fetch(`/api/admin/conversations/${convId}`);
+      const c = await res.json();
+
+      document.getElementById('modal-title').innerText = `Hội Thoại: ${c.id}`;
+      document.getElementById('modal-subtitle').innerText = `ATM: ${c.atmId} | Đề xuất: ${c.proposedAmount.toLocaleString('vi-VN')} đ | Trạng thái: ${c.status}`;
+
+      const chatHtml = (c.messages || []).map(m => {
+        const isAI = m.role === 'assistant';
+        return `
+          <div class="flex ${isAI ? 'justify-start' : 'justify-end'} mb-3">
+            <div class="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${isAI ? 'bg-sky-50 text-slate-800 border border-sky-100' : 'bg-slate-800 text-white'}">
+              <div class="text-[10px] font-bold mb-1 opacity-75">${isAI ? 'Trạm Lắng Nghe' : 'Người cần trợ giúp'}</div>
+              <div>${m.content || '<em>(Không có lời thoại)</em>'}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('modal-body').innerHTML = `
+        <div class="space-y-4">
+          <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200 max-h-[500px] overflow-y-auto">
+            ${chatHtml}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('modal-detail').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    async function approveManually(recordId) {
+      if (!confirm('Xác nhận duyệt giải ngân thủ công cho ca này?')) return;
+      await fetch(`/api/admin/records/${recordId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'APPROVED' })
+      });
+      closeModal();
+      refreshCurrentTab();
+    }
+
+    function closeModal() {
+      document.getElementById('modal-detail').classList.add('hidden');
+    }
+
+    // Modal ATM actions
+    function openAtmModal() {
+      document.getElementById('modal-atm').classList.remove('hidden');
+    }
+    function closeAtmModal() {
+      document.getElementById('modal-atm').classList.add('hidden');
+    }
+    async function saveAtmAction() {
+      const atmId = document.getElementById('input-atm-id').value.trim();
+      const serialNumber = document.getElementById('input-atm-serial').value.trim();
+      const name = document.getElementById('input-atm-name').value.trim();
+      const hospital_id = document.getElementById('input-atm-hospital').value.trim();
+
+      if (!atmId || !serialNumber) return alert('Vui lòng nhập đủ atmId và serialNumber');
+
+      await fetch('/api/admin/atms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ atmId, serialNumber, name, hospital_id, status: 'ACTIVE' })
+      });
+      closeAtmModal();
+      loadAtms();
+    }
+    async function deleteAtmAction(id) {
+      if (!confirm(`Xóa ATM ${id}?`)) return;
+      await fetch(`/api/admin/atms/${id}`, { method: 'DELETE' });
+      loadAtms();
+    }
+
+    // Modal Staff actions
+    function openStaffModal() {
+      document.getElementById('modal-staff').classList.remove('hidden');
+    }
+    function closeStaffModal() {
+      document.getElementById('modal-staff').classList.add('hidden');
+    }
+    async function saveStaffAction() {
+      const staffId = document.getElementById('input-staff-id').value.trim();
+      const name = document.getElementById('input-staff-name').value.trim();
+      const id = document.getElementById('input-staff-citizen').value.trim();
+      const hospital_id = document.getElementById('input-staff-hospital').value.trim();
+
+      if (!staffId || !name) return alert('Vui lòng nhập đủ staffId và tên nhân viên');
+
+      await fetch('/api/admin/staff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ staffId, name, id, hospital_id, staffType: 'all' })
+      });
+      closeStaffModal();
+      loadStaff();
+    }
+    async function deleteStaffAction(id) {
+      if (!confirm(`Xóa nhân viên ${id}?`)) return;
+      await fetch(`/api/admin/staff/${id}`, { method: 'DELETE' });
+      loadStaff();
+    }
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      refreshCurrentTab();
+    });
+  </script>
+</body>
+</html>
