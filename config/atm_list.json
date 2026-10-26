@@ -1,0 +1,18 @@
+{
+  "atmList": [
+    {
+      "atmId": "ATM_001",
+      "serialNumber": "SN-998877",
+      "hospital_id": "BV001",
+      "name": "ATM Trạm Lắng Nghe - Bệnh viện 01",
+      "status": "ACTIVE"
+    },
+    {
+      "atmId": "ATM_002",
+      "serialNumber": "SN-112233",
+      "hospital_id": "BV001",
+      "name": "ATM Trạm Lắng Nghe - Cơ sở 2",
+      "status": "ACTIVE"
+    }
+  ]
+}

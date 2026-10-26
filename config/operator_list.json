@@ -1,0 +1,34 @@
+{
+  "operatorList": [
+    {
+      "staffId": "STAFF_001",
+      "name": "ADMIN",
+      "id": "1234",
+      "hospital_id": "BV001",
+      "staffType": "all"
+    },
+    {
+      "staffId": "STAFF_002",
+      "name": "TRƯƠNG HOÀNG MINH",
+      "id": "079089017448",
+      "hospital_id": "BV001",
+      "staffType": "all"
+    },
+    {
+      "staffId": "STAFF_003",
+      "name": "LÊ VĂN CHÍNH",
+      "id": "046061000150",
+      "hospital_id": "BV001",
+      "staffType": "all"
+    },
+    {
+      "staffId": "STAFF_004",
+      "name": "NGUYỄN TRỌNG TÀI",
+      "id": "051094009757",
+      "hospital_id": "BV001",
+      "staffType": "all"
+    }
+  ],
+  "workingHour_Start": "7",
+  "workingHour_End": "17"
+}

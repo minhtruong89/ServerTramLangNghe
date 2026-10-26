@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Lưu phiên token của ATM để kiểm soát Sliding Window TTL 24h
+model Session {
+  id           String   @id @default(uuid())
+  token        String   @unique
+  user         String
+  issuedAt     DateTime @default(now())
+  lastActiveAt DateTime @default(now())
+  expiresAt    DateTime
+  isRevoked    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([token])
+  @@index([lastActiveAt])
+}
+
+// Lưu log xác thực ATM & Staff
+model ValidationLog {
+  id              String   @id @default(uuid())
+  atmSerialNumber String
+  atmStatus       String
+  requestBody     Json
+  responseBody    Json
+  createdAt       DateTime @default(now())
+}
+
+// Tiến trình hội thoại giữa ATM và Server
+model Conversation {
+  id              String         @id // Định dạng CONV_xxx
+  atmId           String
+  staffIds        Json           // Danh sách staffId tham gia
+  proposedAmount  Int            // Số tiền bảo chứng đề xuất (tối đa 2.000.000)
+  status          String         // START, PENDING, UPLOAD, CONFIRM, FINISHED, EXPIRED
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  lastActiveAt    DateTime       @default(now())
+
+  messages        Message[]
+  files           UploadedFile[]
+  medicalRecord   MedicalRecord?
+
+  @@index([atmId])
+  @@index([status])
+}
+
+// Từng lượt thoại (turn)
+model Message {
+  id              String       @id @default(uuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role            String       // "user" hoặc "assistant"
+  action          String?      // START, PENDING, UPLOAD, CONFIRM
+  content         String
+  clientTimestamp String?
+  createdAt       DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+// File chứng từ scan từ ATM
+model UploadedFile {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  fileName       String
+  originalName   String
+  filePath       String
+  fileUrl        String
+  fileSize       Int
+  mimeType       String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+// Hồ sơ xét duyệt cuối cùng
+model MedicalRecord {
+  id                  String       @id // REC_xxx
+  conversationId      String       @unique
+  conversation        Conversation @relation(fields: [conversationId], references: [id])
+  atmId               String
+  staffList           Json
+  proposedAmount      Int
+
+  // Dữ liệu thô ATM gửi lên
+  submittedData       Json
+
+  // Điểm số do AI chấm
+  aiRawOutput         String
+  aiState             String?      // HỢP LỆ, CHƯA ĐỦ THÔNG TIN, TẠM DỪNG - ĐÓNG CA
+  aiEmergencyScore    Int?
+  aiIncomeScore       Int?
+  aiFamilyScore       Int?
+  aiHealthScore       Int?
+  aiTotalScore        Int?
+  aiDisbursementRate  Int?         // 0, 20, 40, 60, 80, 100
+  aiVerificationTier  String?      // Mức A, Mức B...
+
+  // Điểm số do Server tự tính toán & kiểm chứng
+  serverTotalScore    Int
+  serverDisbursementRate Int
+  approvedAmount      Int
+  status              String       // APPROVED, REJECTED
+  requireStaffConfirm Boolean      @default(false)
+  warnings            Json?
+
+  processedAt         DateTime     @default(now())
+  createdAt           DateTime     @default(now())
+}

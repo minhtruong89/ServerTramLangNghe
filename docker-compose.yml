@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tram_lang_nghe_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword_2026
+      POSTGRES_DB: quy_bong_sen
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - tram_network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tram_lang_nghe_api
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      API_USER: microtec
+      API_PASS: admin@1234
+      JWT_SECRET: quybongsen_super_secret_jwt_key_2026_tramlangnghe
+      TOKEN_TTL_HOURS: 24
+      CONVERSATION_TTL_MINUTES: 30
+      OPENAI_API_KEY: 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
+      OPENAI_CONVERSATION_MODEL: gpt-4o-mini
+      OPENAI_SCORING_MODEL: gpt-4o
+      DATABASE_URL: postgresql://postgres:postgrespassword_2026@postgres:5432/quy_bong_sen?schema=public
+      UPLOAD_DIR: /app/uploads
+      BASE_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./config:/app/config
+      - ./prompts:/app/prompts
+    networks:
+      - tram_network
+
+volumes:
+  pgdata:
+
+networks:
+  tram_network:
+    driver: bridge
